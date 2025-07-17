@@ -17,6 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 readRenviron(".Renviron")
 ```
 
+**Hier werden R-Packete für die Daten Manipulation bzw. Auswertung beladen**
 ```{r}
 library(conflicted)
 library(tidyverse)
@@ -30,7 +31,7 @@ library(stringr)
 ```
 
 
-
+**Erstellte Umgebung Variablen werden für die Datenbank Verbindung eingelesen**
 ```{r}
 con <- dbConnect(
   Postgres(),
@@ -42,7 +43,7 @@ con <- dbConnect(
 )
 ```
 
-
+**Die gezielte Daten Tabelle liegt in einer spezifisches Schema in PostgreSQL. Die Tabellen enhalten in diesem Schema werden aufgelisted und geprüft, ob die gewünschte Tabelle drin liegt**
 ```{r}
 schema_name <- "baker_yelp_dbt_prod"
 
@@ -57,21 +58,48 @@ tables <- dbGetQuery(con, paste0("
 print(tables)
 ```
 
-
+**Hier werden die Daten mittels SQL selektiert**
 ```{r}
 product_ts <- dbGetQuery(con, "SELECT * FROM baker_yelp_dbt_prod.products_weekly_ts")
 ```
 
-
+**Datentypen und Werte einsehen**
 ```{r}
 str(product_ts)
+```
+
+**Statistik der Daten einsehen, um die Zentrale Tendenz und die Streuung der Daten zu verstehen.**
+
+*Beobachtungen:*
+
+- Die Daten wurden von mitte 2015 bis mitte 2023 gesammelt.
+- Bei viele Produkte(spezial150_amt) liegt der mittleren Wert bei 0. D.H Bis zu 50% ihre Beträge liegen bei 0 Geld Einheiten(GE).
+- Der minimale produzierte Betrag bei alle Produkte liegt bei 0 GE.
+- Der höchste durchschnittliche produzierte Betrag über den ganzen Zeitraum ist bei dem Produkt special200_amt beobachtet und dasselbe Produkt hat der höchste produzierte Betrag unter alle Produkten.Allerding liegt sein Mittelwert bei 0 GE.
+- Bei der Produkte local100_amt, local300_amt und special100_amt liegen der Mittelwert und der Durchschnitt nah beieinander.Diese weißt auf einer quasi Normal Verteilung hin spricht die Daten sind quasi gleichverteilt. 
+
+````{r}
 summary(product_ts)
 ```
 
+```{r}
+g1 <- product_ts %>%
+  ggplot(aes(x = local100_amt)) +
+  geom_histogram(fill = "blue", bins = 15) +
+  xlab("Produzierte Beträge") +
+  ylab("Anzahl der Beträge je klasse") +
+  theme_classic() +
+  ggtitle("Verteilung der beobachteten Beträge für das Produkt Local100") +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+g1
+```
 
 ```{r}
 product_ts <- product_ts %>% pivot_longer(cols = ends_with("amt"), names_to = "products", values_to = "weekly_amount", names_repair = "check_unique")
 ```
+
 
 ```{r}
 str(product_ts)
@@ -88,8 +116,10 @@ gplot_1 <- product_ts %>%
   summarise(total_amount = sum(weekly_amount)) %>%
   ggplot(aes(x = produkte, y = total_amount)) + 
   geom_col(fill = "orange") +
+  ggtitle("Gesamt produzierter Betrag der Produkte") +
   theme_linedraw() +
   theme(
+    plot.title = element_text(hjust = 0.5),
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
 gplot_1
@@ -97,14 +127,14 @@ gplot_1
 
 
 ```{r}
-gplot_1 <- dplyr::filter(product_ts, products == "special100_amt") %>%
+gplot_2 <- dplyr::filter(product_ts, products == "special100_amt") %>%
   ggplot(aes(x = endofweek, y = weekly_amount)) + 
-  geom_line(color = "green") +
-  scale_x_date(date_labels = "%d %Y", date_breaks = "2 weeks") +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 90, hjust = 1)
-  )
-gplot_1
+  geom_line(color = "blue") +
+  xlab("Ende der Woche") +
+  ylab("Produzierter Betrag") +
+  ggtitle("Zeitliche Entwicklung des Meist produzierten Produkt") +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5))
+gplot_2
 ```
 
