@@ -2,7 +2,11 @@
 title: "local bakery data analysis"
 author: "Yufenyuy"
 date: "`r Sys.Date()`"
-output: pdf_document
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -13,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #setwd("C:/gitrepos/ranalytics/r_data_analysis")
 ```
 
-```{r setup, include=FALSE}
+```{r setup1, include=FALSE}
 readRenviron(".Renviron")
 ```
 
@@ -32,6 +36,7 @@ library(stringr)
 
 
 **Erstellte Umgebung Variablen werden für die Datenbank Verbindung eingelesen**
+
 ```{r}
 con <- dbConnect(
   Postgres(),
@@ -44,6 +49,7 @@ con <- dbConnect(
 ```
 
 **Die gezielte Daten Tabelle liegt in einer spezifisches Schema in PostgreSQL. Die Tabellen enhalten in diesem Schema werden aufgelisted und geprüft, ob die gewünschte Tabelle drin liegt**
+
 ```{r}
 schema_name <- "baker_yelp_dbt_prod"
 
@@ -59,11 +65,13 @@ print(tables)
 ```
 
 **Hier werden die Daten mittels SQL selektiert**
+
 ```{r}
 product_ts <- dbGetQuery(con, "SELECT * FROM baker_yelp_dbt_prod.products_weekly_ts")
 ```
 
 **Datentypen und Werte einsehen**
+
 ```{r}
 str(product_ts)
 ```
@@ -78,7 +86,7 @@ str(product_ts)
 - Der höchste durchschnittliche produzierte Betrag über den ganzen Zeitraum ist bei dem Produkt special200_amt beobachtet und dasselbe Produkt hat der höchste produzierte Betrag unter alle Produkten.Allerding liegt sein Mittelwert bei 0 GE.
 - Bei der Produkte local100_amt, local300_amt und special100_amt liegen der Mittelwert und der Durchschnitt nah beieinander.Diese weißt auf einer quasi Normal Verteilung hin spricht die Daten sind quasi gleichverteilt. 
 
-````{r}
+```{r}
 summary(product_ts)
 ```
 
@@ -105,6 +113,8 @@ product_ts <- product_ts %>% pivot_longer(cols = ends_with("amt"), names_to = "p
 str(product_ts)
 summary(product_ts)
 ```
+
+
 
 ```{r}
 
