@@ -1,0 +1,91 @@
+---
+title: "local bakery data analysis"
+author: "Yufenyuy"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+setwd("C:/gitrepos/ranalytics/r_data_analysis")
+```
+
+```{r setup, include=FALSE}
+readRenviron(".Renviron")
+```
+
+```{r}
+library(conflicted)
+library(tidyverse)
+library(DBI)
+library(RPostgres)
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+library(tidyr)
+```
+
+
+
+```{r}
+con <- dbConnect(
+  Postgres(),
+  dbname = Sys.getenv("DBNAME"),
+  host = Sys.getenv("HOST"), 
+  user = Sys.getenv("USER"),
+  password = Sys.getenv("PASSWORD"),
+  port = Sys.getenv("PORT")
+)
+```
+
+
+```{r}
+schema_name <- "baker_yelp_dbt_prod"
+
+# SQL query to list tables in the given schema
+tables <- dbGetQuery(con, paste0("
+  SELECT table_name
+  FROM information_schema.tables
+  WHERE table_schema = '", schema_name, "'
+    AND table_type = 'BASE TABLE';
+"))
+
+print(tables)
+```
+
+
+```{r}
+product_ts <- dbGetQuery(con, "SELECT * FROM baker_yelp_dbt_prod.products_weekly_ts")
+```
+
+
+```{r}
+str(product_ts)
+summary(product_ts)
+```
+
+
+```{r}
+product_ts <- product_ts %>% pivot_longer(cols = ends_with("amt"), names_to = "products", values_to = "weekly_amount", names_repair = "check_unique")
+```
+
+```{r}
+str(product_ts)
+summary(product_ts)
+```
+
+```{r}
+gplot_1 <- dplyr::filter(product_ts, products == "special100_amt") %>%
+  ggplot(aes(x = endofweek, y = weekly_amount)) + 
+  geom_line(color = "green") +
+  scale_x_date(date_labels = "%d %Y", date_breaks = "2 weeks") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  )
+gplot_1
+```
+
