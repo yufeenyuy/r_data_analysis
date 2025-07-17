@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-setwd("C:/gitrepos/ranalytics/r_data_analysis")
+#setwd("C:/gitrepos/ranalytics/r_data_analysis")
 ```
 
 ```{r setup, include=FALSE}
@@ -26,6 +26,7 @@ library(ggplot2)
 library(lubridate)
 library(dplyr)
 library(tidyr)
+library(stringr)
 ```
 
 
@@ -76,6 +77,24 @@ product_ts <- product_ts %>% pivot_longer(cols = ends_with("amt"), names_to = "p
 str(product_ts)
 summary(product_ts)
 ```
+
+```{r}
+
+gplot_1 <- product_ts %>% 
+  mutate(
+    produkte = str_sub(products, 1, str_length(products) - 4)
+    ) %>%
+  group_by(produkte) %>%
+  summarise(total_amount = sum(weekly_amount)) %>%
+  ggplot(aes(x = produkte, y = total_amount)) + 
+  geom_col(fill = "orange") +
+  theme_linedraw() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+gplot_1
+```
+
 
 ```{r}
 gplot_1 <- dplyr::filter(product_ts, products == "special100_amt") %>%
