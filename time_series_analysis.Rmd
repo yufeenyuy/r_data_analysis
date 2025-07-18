@@ -105,20 +105,19 @@ g1
 ```
 
 ```{r}
-product_ts <- product_ts %>% pivot_longer(cols = ends_with("amt"), names_to = "products", values_to = "weekly_amount", names_repair = "check_unique")
+product_ts_long <- product_ts %>% pivot_longer(cols = ends_with("amt"), names_to = "products", values_to = "weekly_amount", names_repair = "check_unique")
 ```
 
 
 ```{r}
-str(product_ts)
-summary(product_ts)
+str(product_ts_long)
+summary(product_ts_long)
 ```
-
 
 
 ```{r}
 
-gplot_1 <- product_ts %>% 
+gplot_1 <- product_ts_long %>% 
   mutate(
     produkte = str_sub(products, 1, str_length(products) - 4)
     ) %>%
@@ -126,6 +125,7 @@ gplot_1 <- product_ts %>%
   summarise(total_amount = sum(weekly_amount)) %>%
   ggplot(aes(x = produkte, y = total_amount)) + 
   geom_col(fill = "orange") +
+  ylab("Betrag") + 
   ggtitle("Gesamt produzierter Betrag der Produkte") +
   theme_linedraw() +
   theme(
@@ -134,17 +134,35 @@ gplot_1 <- product_ts %>%
   )
 gplot_1
 ```
++Aus der obige Graphic stellt sich fest, dass Special100, Special500 und local300 die höchste produzierte Beträge erzielt hatten.
 
 
 ```{r}
-gplot_2 <- dplyr::filter(product_ts, products == "special100_amt") %>%
-  ggplot(aes(x = endofweek, y = weekly_amount)) + 
-  geom_line(color = "blue") +
-  xlab("Ende der Woche") +
-  ylab("Produzierter Betrag") +
-  ggtitle("Zeitliche Entwicklung des Meist produzierten Produkt") +
+
+gplot_3 <- product_ts_long %>% 
+  dplyr::filter(products %in% c("special100_amt","special500_amt", "local300_amt")) %>%
+  mutate(
+    produkte = str_sub(products, 1, str_length(products) - 4)
+    ) %>%
+  ggplot(aes(x = endofweek, y = weekly_amount, col = produkte )) + 
+  geom_line() +
+  xlab("year") +
+  ylab("Betrag") + 
+  ggtitle("Gesamt produzierter Betrag der Produkte") +
   theme_classic() +
-  theme(plot.title = element_text(hjust = 0.5))
-gplot_2
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+gplot_3
 ```
 
++Vor 2020 wurde bei diesen Produkten in verschiedene Zeitabständen beobachtet.
+
++Ab 2020 ist bei diesen Produkten eine steigende Trend zu sehen.
+
++Special100 ist mit Abstand das meist produzierte Produkt, während local300 and special500 nach 2023 gegen einander konkuriet haben.
+
+
+
+#Zeit Rheihe Analys folgt.
