@@ -13,9 +13,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
-#setwd("C:/gitrepos/ranalytics/r_data_analysis")
-```
 
 ```{r setup1, include=FALSE}
 readRenviron(".Renviron")
@@ -32,6 +29,7 @@ library(lubridate)
 library(dplyr)
 library(tidyr)
 library(stringr)
+library(fpp3)
 ```
 
 
@@ -64,32 +62,32 @@ tables <- dbGetQuery(con, paste0("
 print(tables)
 ```
 
-**Hier werden die Daten mittels SQL selektiert**
 
+**Hier werden die Daten mittels SQL selektiert**
 ```{r}
 product_ts <- dbGetQuery(con, "SELECT * FROM baker_yelp_dbt_prod.products_weekly_ts")
 ```
 
-**Datentypen und Werte einsehen**
 
+**Datentypen und Werte einsehen**
 ```{r}
 str(product_ts)
 ```
 
 **Statistik der Daten einsehen, um die Zentrale Tendenz und die Streuung der Daten zu verstehen.**
-
+```{r}
+summary(product_ts)
+```
 *Beobachtungen:*
 
 - Die Daten wurden von mitte 2015 bis mitte 2023 gesammelt.
 - Bei viele Produkte(spezial150_amt) liegt der mittleren Wert bei 0. D.H Bis zu 50% ihre Beträge liegen bei 0 Geld Einheiten(GE).
 - Der minimale produzierte Betrag bei alle Produkte liegt bei 0 GE.
 - Der höchste durchschnittliche produzierte Betrag über den ganzen Zeitraum ist bei dem Produkt special200_amt beobachtet und dasselbe Produkt hat der höchste produzierte Betrag unter alle Produkten.Allerding liegt sein Mittelwert bei 0 GE.
-- Bei der Produkte local100_amt, local300_amt und special100_amt liegen der Mittelwert und der Durchschnitt nah beieinander.Diese weißt auf einer quasi Normal Verteilung hin spricht die Daten sind quasi gleichverteilt. 
+- Bei der Produkte local100_amt, local300_amt und special100_amt liegen der Mittelwert und der Durchschnitt nah beieinander.Diese weißt auf einer quasi Normal Verteilung hin spricht die Daten sind quasi gleichverteilt.
 
-```{r}
-summary(product_ts)
-```
 
+**Ein Histogram für das Produkt Local100_amt**
 ```{r}
 g1 <- product_ts %>%
   ggplot(aes(x = local100_amt)) +
@@ -104,20 +102,21 @@ g1 <- product_ts %>%
 g1
 ```
 
+**Ein neue Datensatz wird hier erzeugt**
 ```{r}
 product_ts_long <- product_ts %>% pivot_longer(cols = ends_with("amt"), names_to = "products", values_to = "weekly_amount", names_repair = "check_unique")
 ```
 
 
+**Statistik der Daten einsehen.**
 ```{r}
-str(product_ts_long)
 summary(product_ts_long)
 ```
 
-
+**Die produzierte Menge der Produkte werden hier verglichen**
 ```{r}
 
-gplot_1 <- product_ts_long %>% 
+gplot_2 <- product_ts_long %>% 
   mutate(
     produkte = str_sub(products, 1, str_length(products) - 4)
     ) %>%
@@ -132,14 +131,35 @@ gplot_1 <- product_ts_long %>%
     plot.title = element_text(hjust = 0.5),
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
-gplot_1
+gplot_2
 ```
 +Aus der obige Graphic stellt sich fest, dass Special100, Special500 und local300 die höchste produzierte Beträge erzielt hatten.
 
-
+**Zeitlich produzierte Menge für jedes Produkt**
 ```{r}
 
 gplot_3 <- product_ts_long %>% 
+  mutate(
+    produkte = str_sub(products, 1, str_length(products) - 4)
+    ) %>%
+  ggplot(aes(x = endofweek, y = weekly_amount, col = produkte )) + 
+  geom_line() +
+  xlab("year") +
+  ylab("Betrag") + 
+  ggtitle("Gesamt produzierter Betrag alle Produkte über Zeit") +
+  theme_classic() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+gplot_3
+```
+*Aus der obigen Graphik kann man sehen, dass produktionsdaten für alle Produkte zu derselben Zeiten gesammelt wurden. Es gibt Produkte, die nach 2020 in der Produktion gewachsen sind. Die steigende Produktionsmengen könnte von den Nachfrage am Markt oder die Qualität der Produkte bzw. wachsenden Kundenbasis gewesen sein. Bei viele anderen Produkte ist die Produktion nach wie vor 2020 niedrig geblieben sind.Diese könnte man als eine Niche betrachten.* 
+
+
+**Zeitlich produzierte Menge für die drei meist produzierte Produkte**
+```{r}
+gplot_4 <- product_ts_long %>% 
   dplyr::filter(products %in% c("special100_amt","special500_amt", "local300_amt")) %>%
   mutate(
     produkte = str_sub(products, 1, str_length(products) - 4)
@@ -148,13 +168,15 @@ gplot_3 <- product_ts_long %>%
   geom_line() +
   xlab("year") +
   ylab("Betrag") + 
-  ggtitle("Gesamt produzierter Betrag der Produkte") +
+  ggtitle("Gesamt produzierter Betrag der besten Produkte über die Zeit") +
   theme_classic() +
   theme(
     plot.title = element_text(hjust = 0.5),
-    axis.text.x = element_text(angle = 45, hjust = 1)
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom",
+    legend.title = element_blank()
   )
-gplot_3
+gplot_4
 ```
 
 +Vor 2020 wurde bei diesen Produkten in verschiedene Zeitabständen beobachtet.
@@ -165,5 +187,66 @@ gplot_3
 
 
 
-#Zeit Rheihe Analys folgt.
-...
+## Zeit Rheihe Analyse folgt.
+Ziel der Zeitrheihe ist eine mindestens 6 monatige Forecast für das meist produzierte Produkt zu entwickeln.
+
+**Ein geeignetes Objekt für Zeitrheihe Analyse wird hier erzeugt. Diese ist für die meist produzierten Produkte**
+```{r}
+products <- product_ts_long %>% 
+  dplyr::filter(year(endofweek) %in% c(2020, 2021, 2022, 2023) & products %in% c("special100_amt","special500_amt", "local300_amt")) %>% 
+  arrange(desc(endofweek)) %>% 
+  mutate(weekly = yearweek(endofweek)) 
+products
+```
+
+**Die schlüssel sowie das Index der Zeitrheihen werden hier definiert. Der Schlüssel bestimmt eine Zeile eindeutigt.**
+```{r}
+local_bakery_production_ts <- products |> as_tsibble(index = weekly, key = c(endofweek, products))
+```
+
+**Der Kopt der Rheihen anschauen. Da sieht man, dass es sich um wöchenliche Zeitrheihen handelt.**
+```{r}
+head(local_bakery_production_ts,6)
+```
+
+**Zeitrheihen für die meist produzierte Produkte graphisch darstellen.**
+```{r}
+local_bakery_production_ts %>%
+  ggplot(aes(x = weekly)) +
+  geom_line(aes(y = weekly_amount, color = products)) +
+  labs(title = "Zeitrheihen für die meist produzierte Produkte") +
+  theme_classic() + 
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )
+```
+
+```{r}
+local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>%
+  ggplot(aes(x = weekly)) +
+  geom_line(aes(y = weekly_amount), color = "blue") +
+  geom_point(aes(y = weekly_amount), color = "black") +
+  labs(title = "Zeitrheihen für special100_amt") +
+  theme_classic() + 
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+**Betrachte man die Graphik für das meist produzierte Produkt sprich special100_amt, dann kann man folgendes beobachten**
+
++ Die Zeitrheihe zeigt allgemein einen steigenden Trend von 2020 bis Mitte 2023, obwohl der Trend ab Ende 2022 gesunken ist.
++ Die Variation ist über die ganze Zeit ziemlich konstant bzw. gleich.
++ Es gibt keine Woche ohne Beobachtung.
+
+Aus der Beobachtung kann man davon ausgehen, dass die Zeitrheihe **nicht Stationär** ist. D.h die durchschnittliche produzierte Menge dieses Produkts hatte sich von eine Woche auf die Andern geändert. Die Stationarität ist ein wichtiges Konzept in statistische Zeitrheihe Analyse. 
+
+
+----Die Analyse ist noch nicht abgeschlossen----
+
+
+
+
