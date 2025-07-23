@@ -179,16 +179,57 @@ gplot_4 <- product_ts_long %>%
 gplot_4
 ```
 
-+Vor 2020 wurde bei diesen Produkten in verschiedene Zeitabständen beobachtet.
++ Vor 2020 wurde bei diesen Produkten in verschiedene Zeitabständen beobachtet.
 
-+Ab 2020 ist bei diesen Produkten eine steigende Trend zu sehen.
++ Ab 2020 ist bei diesen Produkten eine steigende Trend zu sehen.
 
-+Special100 ist mit Abstand das meist produzierte Produkt, während local300 and special500 nach 2023 gegen einander konkuriet haben.
++ Special100 ist mit Abstand das meist produzierte Produkt, während local300 and special500 nach 2023 gegen einander konkuriet haben.
 
 
 
-## Zeit Rheihe Analyse folgt.
-Ziel der Zeitrheihe ist eine mindestens 6 monatige Forecast für das meist produzierte Produkt zu entwickeln.
+## Zeitrheihe Analyse (Point Forecast sprich Durchschnitt Vorhersagen).
+In Zeitrheihe Analyse geht es um Forecasting. Forecasting an Sicht ist eine *qualitative or quantitative Methode*, die historische Daten, Information oder Wissen über ein Ereignis nutzt, um *kurz, mittel oder langfristig* Werte des Ereignises vorherzusagen. Zeitrheihe Forecasting basert auf statistische oder quantitative Methode. D.h Die Prognose basierend explizit auf historische Daten, die Möglicherweise Information oder Muster über das beobachtete Ereignis beinhaltet.Dazu sind die Beobachtungen der Zeitrheihe eine Zusammensetzung von *unabhängig, identisch verteilte zufallsvariablen sprich ein White-noise prozess*. Wichtig zu wissen ist, dass eine Zeitrheihe ist Zeitabhängig. D.h Die Beobachtungen müssen mit einer Zeit Komponent gesammelt.Diese Methode ist für die Prognose von Aktienkurs, Umsatz, Verkaufs -oder Produktionszahlen usw. geeignet. Da *das Paderborner Local Bakery* wieder anstoßen möchte und möchte diese Entscheidung Datengetrieben tun, wird eine Zeitrheihe Forecast für die Produktionszahlen sein meist produziertes Produkt durchgeführt.Ziel der Zeitrheihe ist eine mindestens 6 monatige Forecast für das meist produzierte Produkt zu entwickeln. Damit könnte Local Bakery sehen wie die Produktion dieses Produkt unter Normale Umstände entwickelt hätte. Die Forcast wird die Grundlage für die Entscheidung des Markts wieder einzutreten bilden.
+
+### Wichtige Statistiken für stationäre Zeitrheihe Analyse
+
+Eine stationäre Zeitrheihe ist Eine mit einem konstanten mittelwert über den betrachteten Zeitraum.
+
+1. Mittelwert: Misst die zentrale Tendenz einer Verteilung oder eine Zeitrheihe in diesem Fall.
+
+$$U = [1/N\sum_{i=1}^N i]  ---------(1)$$
+
+2. Varianz: Mistt die Verteilung um den Mittelwert oder zur Bestimmung der Stärke der Schwankungen vom Mittelwert.
+$$V = [1/N\sum_{i=1}^N (i - U)^2]  ---------(2)$$
+
+3. Standardabweichung: Wurzel von der Varianz.
+$$S = [\sqrt{V}]  ---------(3)$$
+
+4. Covarianz: Zusammen mit der Korrelation erklärt die Beziehung zwischen Variablen derselben Länge. Die Beziehung kann -ve, +ve oder nicht-existnz sein. Gegeben Zwei beobachtete Ereignisse *a und b* derselben Länge. Dann ist die Kovarianz definiert als
+
+$$C_{a,b} = 1/N\sum_{i=1}^N(a_1 -U_a)(b_i - U_b)\ -----(4)$$
+$$C_{Yl} = 1/N-1\sum_{t=1}^{N-l}(Y_t - U_{ay})(Y_{t+1} - U_{by})\ -----(4)\\ Für\ eine\ Zeitrheihe\ mit\ gerade\ Länge\ wobei\ l die\ Anzahl\ der\ Verschiebung\ benötigt\ um\ die\ Kovarianz\ zu\ berechnen.\\Dies\ hilft\ dabei\ die\ Zeitrheihe\ Linearische flexible\ darzustellen. Wenn\ l=0,\ dann\ ist\ die\ Zeitrheihe\ noch\ nicht\ verschoben.$$
+
+wobei,
+
+$$C_{a,b} = 0\ d.h\ keine\ Korrelation\ zwischen\ a\ und\ b.$$
+
+
+$$C_{a,b} < 0,\ d.h\ eine\ negative\ Korrelation\ zwischen\ a\ und\ b.$$
+
+$$C_{a,b} > 0,\ d.h\ eine\ positive\ Korrelation\ zwischen\ a\ und\ b.$$
+
+
+5. Korrelation: Diese ergibt sich aus der Kovarianz. 
+
+- Ein Wert Nah -1 zeigt eine Starke negative Beziehung zwischen a und b.
+
+- Ein Wert um die 0 zeigt keine Beziehung zwischen a und b.
+
+- Ein Wert Nah 1 zeigt eine Starke positive Beziehung zwischen a und b.
+
+6. Autokorrelation Koeffizient: Diese ergibt sich aus der Kovrianz und Standabweichung von den gemessene Variable. Betracht a und b, dann ist die diese Koffizient wie folgt berechnet:
+
+$$Y_{a,b} = C_{a,b}/S_a * S_b\ mit -1\leq Y_{a,b}\leq 1\ ------(5)$$
 
 **Ein geeignetes Objekt für Zeitrheihe Analyse wird hier erzeugt. Diese ist für die meist produzierten Produkte**
 ```{r}
@@ -242,7 +283,7 @@ local_bakery_production_ts[local_bakery_production_ts$products == "special100_am
 + Die Variation ist über die ganze Zeit ziemlich konstant bzw. gleich.
 + Es gibt keine Woche ohne Beobachtung.
 
-Aus der Beobachtung kann man davon ausgehen, dass die Zeitrheihe **nicht Stationär** ist. D.h die durchschnittliche produzierte Menge dieses Produkts hatte sich von eine Woche auf die Andern geändert. Die Stationarität ist ein wichtiges Konzept in statistische Zeitrheihe Analyse. 
+Aus der Beobachtung kann man davon ausgehen, dass die Zeitrheihe **nicht Stationär** ist. D.h der Mittelwert der produzierte Menge dieses Produkts hatte sich von einer Woche auf der Andern geändert. Die Stationarität ist ein wichtiges Konzept in statistische Zeitrheihe Analyse. Es gibt viele statistische Methode, die für Zeitrheihe Forecasting geeignet sind. Unter anderen sind MA, AR, ETS, Tbats, Theta, ARMA, ARIMA uws. Jedoch ist ARIMA(Auto Regresive Integrated Moving Averag) die gängige Methode, die oft verwendet wird, vor allen wenn die Zeitrheihe Stationär. Da die aktuelle Zeitrheihe nicht Stationär ist, wird diese erst mal transformiert sodass sie die Bedingungen eine Stationäre Zeitrheihe erfüllt. Dannach wird ARIMA benutzt um geeignete Werte für die Forecasting zu bestimmen. 
 
 
 ----Die Analyse ist noch nicht abgeschlossen----
