@@ -208,7 +208,7 @@ $$S = [\sqrt{V}]  ---------(3)$$
 
 $$C_{a,b} = 1/N\sum_{i=1}^N(a_1 -U_a)(b_i - U_b)\ -----(4)$$
 $$C_{Yl} = 1/N-1\sum_{t=1}^{N-l}(Y_t - U_{ay})(Y_{t+1} - U_{by})\ -----(4.1)\\$$
-Für eine Zeitrheihe mit gerade Länge wobei *l* die Anzahl der Verschiebung benötigt um die Kovarianz zu berechnen.Dies hilft dabei die Zeitrheihe Linearische flexible darzustellen. Wenn l=0, dann ist die Zeitrheihe noch nicht verschoben.
+Für eine Zeitrheihe mit gerade Länge wobei *l* die Anzahl der Verschiebung benötigt um die Kovarianz zu berechnen.Dies hilft dabei die Zeitrheihe Linearische flexible darzustellen. Wenn l=0, dann ist die Zeitrheihe noch nicht verschoben (4.1).
 
 Die Interpretation der Kovarianz Werte sin wie folgt zu interpretieren,
 
