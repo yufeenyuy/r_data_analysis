@@ -1,1 +1,1 @@
-# Die Analyse für Produktionsdaten bei Local Bakery sind in html bzw pdf Datein zu finden. 
+# Die Analyse für Produktionsdaten bei Local Bakery sind in .pdf Datein zu finden. 

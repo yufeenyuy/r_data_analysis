@@ -199,16 +199,20 @@ Eine stationäre Zeitrheihe ist Eine mit einem konstanten mittelwert über den b
 $$U = [1/N\sum_{i=1}^N i]  ---------(1)$$
 
 2. Varianz: Mistt die Verteilung um den Mittelwert oder zur Bestimmung der Stärke der Schwankungen vom Mittelwert.
+
 $$V = [1/N\sum_{i=1}^N (i - U)^2]  ---------(2)$$
 
 3. Standardabweichung: Wurzel von der Varianz.
+
 $$S = [\sqrt{V}]  ---------(3)$$
 
 4. Kovarianz: Zusammen mit der Korrelation erklärt die Beziehung zwischen Variablen derselben Länge. Die Beziehung kann -ve, +ve oder nicht-existnz sein. Gegeben Zwei beobachtete Ereignisse *a und b* derselben Länge. Dann ist die Kovarianz definiert als
 
 $$C_{a,b} = 1/N\sum_{i=1}^N(a_1 -U_a)(b_i - U_b)\ -----(4)$$
-$$C_{Yl} = 1/N-1\sum_{t=1}^{N-l}(Y_t - U_{ay})(Y_{t+1} - U_{by})\ -----(4.1)\\$$
-Für eine Zeitrheihe mit gerade Länge wobei *l* die Anzahl der Verschiebung benötigt um die Kovarianz zu berechnen.Dies hilft dabei die Zeitrheihe Linearische flexible darzustellen. Wenn l=0, dann ist die Zeitrheihe noch nicht verschoben (4.1).
+
+
+$$C_{Yl} = 1/N\sum_{t=1}^{N-l}(Y_t - U_{ay})(Y_{t+1} - U_{by})\ -----(4.1)\\$$
+Für eine Zeitrheihe mit gerade Länge wobei *l* die Anzahl der Verschiebung benötigt um die Kovarianz zu berechnen.Dies hilft dabei die Zeitrheihe Linearische flexible darzustellen. Wenn l=0, dann ist die Zeitrheihe noch nicht verschoben. Es ist wichtig zu merken, dass es Korrelation in der Zeitrheihe für all *l<=N/4*, deswegen die Division durch *N* statt *N-l* in (4.1).
 
 Die Interpretation der Kovarianz Werte sin wie folgt zu interpretieren,
 
@@ -230,7 +234,7 @@ $$C_{a,b} > 0,\ d.h\ eine\ positive\ Korrelation\ zwischen\ a\ und\ b.$$
 
 6. Autokorrelation Koeffizient: Diese ergibt sich aus der Kovrianz und Standabweichung von den gemessene Variable. Betracht a und b, dann ist die diese Koffizient wie folgt berechnet:
 
-$$Y_{a,b} = C_{a,b}/S_a * S_b\ mit -1\leq Y_{a,b}\leq 1\ ------(5)$$
+$$y_{a,b} = C_{a,b}/S_a * S_b\ mit -1\leq Y_{a,b}\leq 1\ ------(5)$$
 
 **Ein geeignetes Objekt für Zeitrheihe Analyse wird hier erzeugt. Diese ist für die meist produzierten Produkte**
 ```{r}
@@ -243,12 +247,12 @@ products
 
 **Die schlüssel sowie das Index der Zeitrheihen werden hier definiert. Der Schlüssel bestimmt eine Zeile eindeutigt.**
 ```{r}
-local_bakery_production_ts <- products |> as_tsibble(index = weekly, key = c(endofweek, products))
+local_bakery_production_ts <- products |> as_tsibble(index = weekly, key = c(products))
 ```
 
 **Der Kopt der Rheihen anschauen. Da sieht man, dass es sich um wöchenliche Zeitrheihen handelt.**
 ```{r}
-head(local_bakery_production_ts,6)
+local_bakery_production_ts
 ```
 
 **Zeitrheihen für die meist produzierte Produkte graphisch darstellen.**
@@ -265,6 +269,21 @@ local_bakery_production_ts %>%
     legend.title = element_blank()
   )
 ```
+
+
+### Stationarität in Zeitrheihen Analyse
+
+Die Stationarität ist ein wichtiges Konzept in statistische Zeitrheihe Analyse. Es gibt viele statistische Methode, die für Zeitrheihe Forecasting geeignet sind. Unter anderen sind MA, AR, ETS, Tbats, Theta, ARMA, ARIMA uws. Jedoch ist ARIMA(Auto Regresive Integrated Moving Averag) die gängige Methode, die oft verwendet wird, vor allen wenn die Zeitrheihe Stationär. Da die aktuelle Zeitrheihe nicht Stationär ist, wird diese erst mal transformiert sodass sie die Bedingungen eine Stationäre Zeitrheihe erfüllt. Dannach wird ARIMA benutzt um geeignete Werte für die Forecasting zu bestimmen. Zur Bestimmung die Beste Methode für die Forecasting wird die itarative Box-Jenkins Methode verwendet.
+
+Eine Zeitrheihe ist stationär, wenn die folgende Bedingungen erfüllt sind.
+
++ Die Erwartungswert von der Prognose der Zeitrheihe ist gleich der aktuelle Mittelwert.
++ Die Varianz der Zeitrheihe nach der Prognose bleibt unverändert.
++ Die Kovarianz der Zeitrheihe mit Verschiebung gleich die Autokorrelation Koeffizient der 
+
+### Analyse der Zeitrheihe
+
+**Visuelle Beobachtung der Zeitrheihe**
 
 ```{r}
 local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>%
@@ -284,8 +303,15 @@ local_bakery_production_ts[local_bakery_production_ts$products == "special100_am
 + Die Variation ist über die ganze Zeit ziemlich konstant bzw. gleich.
 + Es gibt keine Woche ohne Beobachtung.
 
-Aus der Beobachtung kann man davon ausgehen, dass die Zeitrheihe **nicht Stationär** ist. D.h der Mittelwert der produzierte Menge dieses Produkts hatte sich von einer Woche auf der Andern geändert. Die Stationarität ist ein wichtiges Konzept in statistische Zeitrheihe Analyse. Es gibt viele statistische Methode, die für Zeitrheihe Forecasting geeignet sind. Unter anderen sind MA, AR, ETS, Tbats, Theta, ARMA, ARIMA uws. Jedoch ist ARIMA(Auto Regresive Integrated Moving Averag) die gängige Methode, die oft verwendet wird, vor allen wenn die Zeitrheihe Stationär. Da die aktuelle Zeitrheihe nicht Stationär ist, wird diese erst mal transformiert sodass sie die Bedingungen eine Stationäre Zeitrheihe erfüllt. Dannach wird ARIMA benutzt um geeignete Werte für die Forecasting zu bestimmen. Zur Bestimmung die Beste Methode für die Forecasting wird die itarative Box-Jenkins Methode verwendet.
 
+```{r}
+local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>%
+  ACF(weekly_amount) %>%
+  autoplot() + labs(title="Australian beer production")
+```
+
+
+**Das Korrelogram Beobachten**
 
 ----Die Analyse ist noch nicht abgeschlossen----
 
