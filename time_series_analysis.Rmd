@@ -307,7 +307,7 @@ local_bakery_production_ts[local_bakery_production_ts$products == "special100_am
 ```{r}
 local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>%
   ACF(weekly_amount) %>%
-  autoplot() + labs(title="Australian beer production")
+  autoplot() + labs(title="korrelogram das meist produzierten Produkt")
 ```
 
 
