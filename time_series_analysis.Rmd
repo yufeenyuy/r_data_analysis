@@ -232,9 +232,20 @@ $$C_{a,b} > 0,\ d.h\ eine\ positive\ Korrelation\ zwischen\ a\ und\ b.$$
 
 - Ein Wert Nah 1 zeigt eine Starke positive Beziehung zwischen a und b.
 
-6. Autokorrelation Koeffizient: Diese ergibt sich aus der Kovrianz und Standabweichung von den gemessene Variable. Betracht a und b, dann ist die diese Koffizient wie folgt berechnet:
+6. Autokorrelation Koeffizient: Diese ergibt sich aus der Kovrianz und Standabweichung von den gemessene Variablen.*Autokorrelation* in Zeitrheihen beschreibt die *Korrelation der Zeitrheihe mit sich selbst*.Meitens wird die Autokorrelation der Zeitrheihe für verschieden *Große l* berechnet und auf einer *Korrelogram* visualisiert. Betrachte a(die Zeitrheihe) und b(Verschiebung der Zeitrheihe), dann ist die diese Koffizient wie folgt berechnet:
 
 $$y_{a,b} = C_{a,b}/S_a * S_b\ mit -1\leq Y_{a,b}\leq 1\ ------(5)$$
+
+7. White Noise:
+Diese ist eine Zeitrheihe mit folgende Eigenschaften
+
+- Die Werte sind unabhängig identisch verteilt.
+- Der Mittelwert ist null (0).
+- Die Varianz ist Konstant.
+- Es liegt keine Korrelation vor.
+
+
+Gegeben Zeitabhängige Werte oder eine Zeitrheihe kann an Hand der Korrelogram geprüft werden, ob die Zeitrheihe einen *White Noise*. Falls die Zeitrheihe ein *White Noise prozess* ist, dann *müssen* 95% alle Korrelation Koeffiziente innerhalb den Signifikanz Bereich auf dem Korrelogram. Anders gesagt, es muss maximal 5% alle Korrelation Koefiziente außerhalb der Signifikan Bereich liegen. White Noise ist ein wichtiges Konzept in der Zeitrheihe Analyse.    
 
 **Ein geeignetes Objekt für Zeitrheihe Analyse wird hier erzeugt. Diese ist für die meist produzierten Produkte**
 ```{r}
@@ -248,6 +259,7 @@ products
 **Die schlüssel sowie das Index der Zeitrheihen werden hier definiert. Der Schlüssel bestimmt eine Zeile eindeutigt.**
 ```{r}
 local_bakery_production_ts <- products |> as_tsibble(index = weekly, key = c(products))
+local_bakery_production_ts
 ```
 
 **Der Kopt der Rheihen anschauen. Da sieht man, dass es sich um wöchenliche Zeitrheihen handelt.**
@@ -290,7 +302,7 @@ local_bakery_production_ts[local_bakery_production_ts$products == "special100_am
   ggplot(aes(x = weekly)) +
   geom_line(aes(y = weekly_amount), color = "blue") +
   geom_point(aes(y = weekly_amount), color = "black") +
-  labs(title = "Zeitrheihen für special100_amt") +
+  labs(title = "Zeitrheihen für special100") +
   theme_classic() + 
   theme(
     plot.title = element_text(hjust = 0.5),
@@ -300,21 +312,45 @@ local_bakery_production_ts[local_bakery_production_ts$products == "special100_am
 **Betrachte man die Graphik für das meist produzierte Produkt sprich special100_amt, dann kann man folgendes beobachten**
 
 + Die Zeitrheihe zeigt allgemein einen steigenden Trend von 2020 bis Mitte 2023, obwohl der Trend ab Ende 2022 gesunken ist.
++ Die Beobachtungen der Zeitrheihen weisen ein gewisses Maß an Züfälligkeit auf.
 + Die Variation ist über die ganze Zeit ziemlich konstant bzw. gleich.
++ Die Anzahl an Tief Punkte steigt über die Jahre. Diese könnte wegen steigende Markt Konkurenz gewesen.
 + Es gibt keine Woche ohne Beobachtung.
-
-
-```{r}
-local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>%
-  ACF(weekly_amount) %>%
-  autoplot() + labs(title="korrelogram das meist produzierten Produkt")
-```
 
 
 **Das Korrelogram Beobachten**
 
+```{r}
+local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>% 
+  ACF(weekly_amount, lag_max = 52) %>%
+  autoplot() + 
+  theme_classic()
+```
+**Beobachtungen aus dem Korrelogram**
+- Für lag = 0 ist der Korrelation Koeffizient (ACF) gleich eins. D.h Die Zeitrheihe ist noch nicht verschoben. Somit ist die Korrelation am Stärksten.
+- Die ACFs sind durchaus positive und sinken mit steigenden lags. Diese zeigt das existierenden Trend in der Zeitrheihe.
+- Mehr als 5% den Werten liegen außerhalb dem Signifikant Bereich. D.h es liegen Korrelationen in der Zeitrheie und somit ist die Zeitrheihe kein *White Noise* Prozess. Dies ist ein weitere Hinweis, dass die Zeitrheihe *nicht Stationär* ist.
+
+
+
+**Saisonalität prüfen**
+```{r}
+local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>%
+  gg_season(weekly_amount, labels = "both") +
+  theme_classic()
+```
+**Beobachtungen aus der Graphik für die Saisonalität**
+
++ Die Zeitrheihen zeigt keine Saisonalität.
+
+
+**Weitere Weg für die Prüfung der Zeitrheihe auf Trend**
+Der Grad oder Ordnung des Trends wird gezählt. Das Ergebnis zeigt, dass die Zeitrheihe von Ordnung eins ist. Dies bedeutet, dass die Zeitrheihe *ein mal* differenziert werden muss, um das Trend aus der Zeitrheihe aufzuräumen. Dieser Ansatz nennt man Differencing. Nach Differencing der Zeitrheihe muss die Zeitrheihe Stationär werden.
+```{r}
+local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>% 
+  features(weekly_amount , unitroot_ndiffs)
+```
+
 ----Die Analyse ist noch nicht abgeschlossen----
-
-
 
 
