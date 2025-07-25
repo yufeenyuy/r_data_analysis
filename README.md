@@ -4,4 +4,4 @@
 
 In diesem Komponent meines Systems werden statistische Methode eingesetzt, um Forecasting für das Produkt, dass am Meisten produziert wurde.
 
-![Die Zeitrheihen der drei meist Produzierte Produkte](./img/zeitrheihen.png)
+![Die Zeitrheihen der drei meist Produzierte Produkte](./img/zeitrheihen.JPG)
