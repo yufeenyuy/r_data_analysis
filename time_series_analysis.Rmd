@@ -327,10 +327,18 @@ local_bakery_production_ts[local_bakery_production_ts$products == "special100_am
   theme_classic()
 ```
 **Beobachtungen aus dem Korrelogram**
-- Für lag = 0 ist der Korrelation Koeffizient (ACF) gleich eins. D.h Die Zeitrheihe ist noch nicht verschoben. Somit ist die Korrelation am Stärksten.
-- Die ACFs sind durchaus positive und sinken mit steigenden lags. Diese zeigt das existierenden Trend in der Zeitrheihe.
-- Mehr als 5% den Werten liegen außerhalb dem Signifikant Bereich. D.h es liegen Korrelationen in der Zeitrheie und somit ist die Zeitrheihe kein *White Noise* Prozess. Dies ist ein weitere Hinweis, dass die Zeitrheihe *nicht Stationär* ist.
 
++ Für lag = 0 ist der Korrelation Koeffizient (ACF) gleich eins. D.h Die Zeitrheihe ist noch nicht verschoben. Somit ist die Korrelation am Stärksten.
++ Die ACFs sind durchaus positive und sinken mit steigenden lags. Diese zeigt das existierenden Trend in der Zeitrheihe.
++ Mehr als 5% den Werten liegen außerhalb dem Signifikant Bereich. D.h es liegen Korrelationen in der Zeitrheie und somit ist die Zeitrheihe kein *White Noise* Prozess. Dies ist ein weitere Hinweis, dass die Zeitrheihe *nicht Stationär* ist.
+
+
+**Weitere Weg für die Prüfung der Zeitrheihe auf Trend**
+Der Grad oder Ordnung des Trends wird gezählt. Das Ergebnis zeigt, dass die Zeitrheihe von Ordnung eins ist. Dies bedeutet, dass die Zeitrheihe *ein mal* differenziert werden muss, um das Trend aus der Zeitrheihe aufzuräumen. Dieser Ansatz nennt man Differencing. Nach Differencing der Zeitrheihe muss die Zeitrheihe Stationär werden.
+```{r}
+local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>% 
+  features(weekly_amount , unitroot_ndiffs)
+```
 
 
 **Saisonalität prüfen**
@@ -343,13 +351,6 @@ local_bakery_production_ts[local_bakery_production_ts$products == "special100_am
 
 + Die Zeitrheihen zeigt keine Saisonalität.
 
-
-**Weitere Weg für die Prüfung der Zeitrheihe auf Trend**
-Der Grad oder Ordnung des Trends wird gezählt. Das Ergebnis zeigt, dass die Zeitrheihe von Ordnung eins ist. Dies bedeutet, dass die Zeitrheihe *ein mal* differenziert werden muss, um das Trend aus der Zeitrheihe aufzuräumen. Dieser Ansatz nennt man Differencing. Nach Differencing der Zeitrheihe muss die Zeitrheihe Stationär werden.
-```{r}
-local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>% 
-  features(weekly_amount , unitroot_ndiffs)
-```
 
 ----Die Analyse ist noch nicht abgeschlossen----
 
