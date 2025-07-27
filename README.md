@@ -41,4 +41,4 @@ Die Analyse efolgt mit der programmiersprache R.
 
 
 **Forecast mit Benchmark Modellen**
-![Forecast mit Benchmark Modellen](./img/log_transformiert_forecast.png)
+![Forecast mit Benchmark Modellen](./img/benchmark_forecast.png)
