@@ -295,14 +295,18 @@ Eine Zeitrheihe ist stationär, wenn die folgende Bedingungen erfüllt sind.
 
 ### Analyse der Zeitrheihe
 
-**Visuelle Beobachtung der Zeitrheihe**
-
+**Zeitrheihe für das meist produzierten produkt 
 ```{r}
-local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>%
+special100 <- local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",]
+```
+
+**Visuelle Beobachtung der Zeitrheihe**
+```{r}
+special100 %>%
   ggplot(aes(x = weekly)) +
   geom_line(aes(y = weekly_amount), color = "blue") +
   geom_point(aes(y = weekly_amount), color = "black") +
-  labs(title = "Zeitrheihen für special100") +
+  labs(y = "Produzierter Betrag (GE)", x = "Wochen",title = "Zeitrheihen für special100") +
   theme_classic() + 
   theme(
     plot.title = element_text(hjust = 0.5),
@@ -313,15 +317,28 @@ local_bakery_production_ts[local_bakery_production_ts$products == "special100_am
 
 + Die Zeitrheihe zeigt allgemein einen steigenden Trend von 2020 bis Mitte 2023, obwohl der Trend ab Ende 2022 gesunken ist.
 + Die Beobachtungen der Zeitrheihen weisen ein gewisses Maß an Züfälligkeit auf.
-+ Die Variation ist über die ganze Zeit ziemlich konstant bzw. gleich.
++ Die Variation ist steigt über die Zeit hinweg. Die Variation innerhalb 2020 ist geringer als die Variation innerhalb 2021 was wiederum geringer als die Variation innerhalb 2022 ist.
++ Es ist keine Saisonalität festgestellt.
 + Die Anzahl an Tief Punkte steigt über die Jahre. Diese könnte wegen steigende Markt Konkurenz gewesen.
 + Es gibt keine Woche ohne Beobachtung.
 
 
-**Das Korrelogram Beobachten**
-
+**Saisonalität prüfen**
 ```{r}
-local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>% 
+special100 %>%
+  gg_season(weekly_amount, labels = "both") +
+  labs(y = "Produzierter Betrag", title = "Zeitrheihe auf Saisonalität graphisch prüfen") +
+  theme_classic()
+```
+
+**Beobachtungen aus der Graphik für die Saisonalität**
+
++ Die Zeitrheihen zeigt keine Saisonalität.
+
+
+**Das Korrelogram Beobachten**
+```{r}
+special100 %>% 
   ACF(weekly_amount, lag_max = 52) %>%
   autoplot() + 
   theme_classic()
@@ -329,28 +346,343 @@ local_bakery_production_ts[local_bakery_production_ts$products == "special100_am
 **Beobachtungen aus dem Korrelogram**
 
 + Für lag = 0 ist der Korrelation Koeffizient (ACF) gleich eins. D.h Die Zeitrheihe ist noch nicht verschoben. Somit ist die Korrelation am Stärksten.
-+ Die ACFs sind durchaus positive und sinken mit steigenden lags. Diese zeigt das existierenden Trend in der Zeitrheihe.
-+ Mehr als 5% den Werten liegen außerhalb dem Signifikant Bereich. D.h es liegen Korrelationen in der Zeitrheie und somit ist die Zeitrheihe kein *White Noise* Prozess. Dies ist ein weitere Hinweis, dass die Zeitrheihe *nicht Stationär* ist.
++ Die ACFs sind durchaus positive und sinken langsam mit steigenden lags. Diese zeigt das existierenden Trend in der Zeitrheihe.
++ Mehr als 5% den Werten liegen außerhalb dem Signifikant Bereich. D.h es liegen Korrelationen in der Zeitrheihen und somit ist die Zeitrheihen kein *White Noise* Prozess. Dies ist ein weitere Hinweis, dass die Zeitrheihe *nicht Stationär* ist.
++ Es ist auch keine Saisonalität festgestellt.
 
 
-**Weitere Weg für die Prüfung der Zeitrheihe auf Trend**
-Der Grad oder Ordnung des Trends wird gezählt. Das Ergebnis zeigt, dass die Zeitrheihe von Ordnung eins ist. Dies bedeutet, dass die Zeitrheihe *ein mal* differenziert werden muss, um das Trend aus der Zeitrheihe aufzuräumen. Dieser Ansatz nennt man Differencing. Nach Differencing der Zeitrheihe muss die Zeitrheihe Stationär werden.
+**Weitere Weg für die Prüfung der Zeitrheihen auf Trend und Saisonalität**
+Der Grad oder Ordnung des Trends wird gezählt. Das Ergebnis zeigt, dass die Zeitrheihe von Ordnung eins ist. Dies bedeutet, dass die Zeitrheihe *ein mal* differenziert werden muss, um das Trend und/oder Saisonalität aus der Zeitrheihe aufzuräumen. Dieser Ansatz nennt man Differencing. Nach Differencing der Zeitrheihe muss die Zeitrheihe Stationär werden.
 ```{r}
-local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>% 
-  features(weekly_amount , unitroot_ndiffs)
+union(special100 %>% 
+  features(weekly_amount , unitroot_ndiffs) %>%
+    mutate(check = "trend", diffs = ndiffs) %>%
+    select(c(products,check, diffs)),
+  special100 %>% 
+  features(weekly_amount , unitroot_nsdiffs) %>%
+    mutate(check = "season", diffs = nsdiffs) %>%
+    select(c(products,check, diffs))
+  )
+```
+
+**Da die Varianz der Zeitrheihe sich über die Zeit ändert, wird diese durch das Box-Cox Log Transformation stabilisiert**
+
+```{r}
+special100 %>% mutate(log_weekly_amount = log(weekly_amount)) -> special100_log
+special100_log
 ```
 
 
-**Saisonalität prüfen**
+
+
 ```{r}
-local_bakery_production_ts[local_bakery_production_ts$products == "special100_amt",] %>%
-  gg_season(weekly_amount, labels = "both") +
+special100_log %>%
+  ggplot(aes(x = weekly)) +
+  geom_line(aes(y = log_weekly_amount), color = "blue") +
+  geom_point(aes(y = log_weekly_amount), color = "black") +
+  labs(y = "log(produzierter Betrag) in GE", x = "Woche", 
+       title = "Stabilisierung der Varianz durch Box-Cox Log Transformation") +
+  theme_classic() + 
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) -> log_plot 
+log_plot
+```
+
+**Beobachtungen aus der log transformierte Zeitrheihe**
+
++ Nach der Log Transformation ist die Varianz der Zeitrheihe über die Zeit Konstant.
++ Es besteht immernoch einen Trend
+
+
+Die log transformierte Zeitrheihe zeigt dass *eine Differencing* benötigt wird, um der Trend zu stabilisieren. Es besteht weiterhin keine Saisonalität.
+```{r}
+union(special100_log %>% 
+  features(log_weekly_amount, unitroot_ndiffs) %>%
+    mutate(check = "trend", diffs = ndiffs) %>%
+    select(c(products,check, diffs)),
+  special100_log %>% 
+  features(log_weekly_amount , unitroot_nsdiffs) %>%
+    mutate(check = "season", diffs = nsdiffs) %>%
+    select(c(products,check, diffs))
+  )
+```
+
+**Die Zeitreihe wird nun differentiert, um den Mittelwert zu stabilisieren**
+```{r}
+special100_log %>%
+  mutate(log_diff_weekly_amount = difference(log_weekly_amount)) -> special100_log_diff
+```
+
+**Die log transformiert und differenzierte Zeitrheihe anzeigen**
+Nach der Differenzierung wird der erste beobachtete Wert *NA*. Deswegen wird die Zeile aus der Analyse entfernt.
+```{r}
+special100_log_diff %>%
+  dplyr::filter(!is.na(log_diff_weekly_amount)) %>%  
+  ggplot(aes(x = weekly)) +
+  geom_line(aes(y = log_diff_weekly_amount), color = "blue") +
+  geom_point(aes(y = log_diff_weekly_amount), color = "black") +
+  labs(y = "log(produzierter Betrag) in GE" ,title = "Stabilisierte Varianz und Mittelwert") +
+  theme_classic() + 
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) -> log_plot 
+log_plot
+```
+
+**Beobachtungen aus der log transformierte Zeitrheihe**
++ Die Zeitrheihe zeigt keinen Trend sprich der Mittelwert ist Konstant bzw. Stabil.
++ Die Variation ist Konstant bzw. Stabil
++ Es ist keine Saisonalität festgestellt.
++ Es gibt keine Woche ohne Beobachtung.
+
+
+**Das Korrelogram Beobachten**
+```{r}
+special100_log_diff %>% 
+  dplyr::filter(!is.na(log_diff_weekly_amount)) %>%
+  ACF(log_diff_weekly_amount, lag_max = 15) %>%
+  autoplot() + 
   theme_classic()
 ```
-**Beobachtungen aus der Graphik für die Saisonalität**
+**Beobachtungen der Korrelogram**
 
-+ Die Zeitrheihen zeigt keine Saisonalität.
++ Die Zeitrheihe ist Stationär, denn die ACF fällt schnell gegen *Null(0)* und weißt keine Saisonalität auf.
 
+
+**Das Korrelogram Beobachten**
+```{r}
+special100_log_diff %>% 
+  dplyr::filter(!is.na(log_diff_weekly_amount)) %>%
+  gg_tsdisplay(log_diff_weekly_amount, plot_type = "partial", lag_max = 15) 
+```
+
+**Hiermit wird bestätigt dass keine Differenzierung nicht mehr benötig, um der Trend zu stabilisieren**
+```{r}
+union(special100_log_diff %>% 
+  features(log_diff_weekly_amount, unitroot_ndiffs) %>%
+    mutate(check = "trend", diffs = ndiffs) %>%
+    select(c(products,check, diffs)),
+  special100_log_diff %>% 
+  features(log_diff_weekly_amount , unitroot_nsdiffs) %>%
+    mutate(check = "season", diffs = nsdiffs) %>%
+    select(c(products,check, diffs))
+  )
+```
+
+**Use special100_log_diff to estimate the model using ARIMA**
+```{r}
+special100_log_diff %>%
+  model(arima017 = ARIMA(log_diff_weekly_amount ~ pdq(0,1,7)),
+        arima310 = ARIMA(log_diff_weekly_amount ~ pdq(3,1,0)),
+        arima_stepwise = ARIMA(log_diff_weekly_amount),
+        arima_search = ARIMA(log_diff_weekly_amount, stepwise = FALSE)
+        ) -> arima_models
+arima_models
+```
+
+```{r}
+glance(arima_models) %>%
+  arrange(AICc) %>%
+  select(.model:BIC)
+```
+
+
+
+```{r}
+arima_models %>%
+  select(arima_search) %>%
+  gg_tsresiduals()
+```
+
+
+
+
+```{r}
+augment(arima_models) %>% 
+  dplyr::filter(.model == "arima_search") %>%
+  features(.innov, ljung_box, lag = 15, dof = 3)
+```
+
+```{r}
+arima_models %>% 
+  forecast(h = "12 months") %>%
+  dplyr::filter(.model == "arima_search") %>%
+  autoplot(special100_log_diff)
+```
+
+
+
+**Use special100_log to estimate the model using ARIMA**
+```{r}
+special100_log %>%
+  model(arima310 = ARIMA(log_weekly_amount ~ pdq(3,0,0)),
+        arima_stepwise = ARIMA(log_weekly_amount),
+        arima_search = ARIMA(log_weekly_amount, stepwise = FALSE)
+        ) -> arima_model
+arima_model
+```
+
+
+```{r}
+glance(arima_model) %>%
+  arrange(AICc) %>%
+  select(.model:BIC)
+```
+
+```{r}
+arima_model %>%
+  select(arima_search) %>%
+  gg_tsresiduals()
+```
+
+
+```{r}
+augment(arima_model) %>% 
+  dplyr::filter(.model == "arima_search") %>%
+  features(.innov, ljung_box, lag = 15, dof = 1)
+```
+
+```{r}
+arima_model %>% 
+  forecast(h = "12 months") %>%
+  dplyr::filter(.model == "arima_search") %>%
+  autoplot(special100_log) +
+  labs(y = "Log transformierte Beträge (GE)", x = "Woche", title = "Log transformierte Werte + forecast") +
+  theme_classic() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+**Benchmark Model für die Forecast spezifizieren**
+Diese sind wichtig gerade, wenn man wissen möchte, wie genau das entwickelte ARIMA Model im Vergleich zu den Benchmark Modelen forecasten könnte. 
+```{r}
+special100_fit <- special100_log %>%
+  model(
+    Mean = MEAN(log_weekly_amount), 
+    Drift = RW(log_weekly_amount ~ drift()), 
+    Naive = NAIVE(log_weekly_amount),
+    Seasonal_naive = SNAIVE(log_weekly_amount)
+  )
+```
+
+
+**Log transformierte Zeitrheihe zusammen mit der Forecast der Benchmark Modellen.**
+```{r}
+special100_fc <- special100_fit %>%
+  forecast(h = "52 weeks")  
+special100_fc %>% autoplot(special100_log, level = NULL) +
+  labs(y = "Log transformierte Beträge (GE)", x = "Wochen", title = "Log transformierte Werte + Forecast der Benchmark Modellen") +
+  guides(color = guide_legend(title = "vorhersagen")) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+
+**Die Log Transformation wird hier zurückgesetzt**
+Der Blaue Teil der Linie zeigt wie der Mittelwert des produzierten Betrag für das meist produzierte Produkt in der Zukunft sich entwickeln kann. Dies entspricht den Erwartungswert nicht den tatsächlichen Wert, der in der Zukunft beobachtet wird.
+```{r}
+fct <- arima_model %>% 
+  forecast(h = "12 months") %>%
+  dplyr::filter(.model == "arima_search") %>%
+  mutate(.expmean = exp(.mean))
+
+special100_log <- special100_log %>% mutate(log_week_amount = exp(log_weekly_amount))
+ 
+ggplot() +
+  geom_line(data = special100_log, aes(x = weekly, y = log_week_amount), color = "black") +
+  geom_line(data = fct, aes(x = weekly, y = .expmean), color = "blue") +
+    labs(title = "Originale Zeitrheihe zusammen mit der Mittelwert Forecast",
+       y = "Produzierter Betrag", x = "Woche") +
+  theme_classic()
+```
+
+**Generiere 5 mögliche Pfade, die Zukunfswerte annehmen könnte.**
+```{r}
+sim_paths <- arima_model %>%
+  generate(h = "12 months", times = 5, bootstrap = TRUE) %>%
+  dplyr::filter(.model == "arima_search") %>%
+  mutate(.sim = exp(.sim))   # back-transform simulations
+sim_paths
+```
+
+# Simulation mit ARIMA Model
+```{r}
+special100_orig <- special100_log %>%
+  mutate(weekl_amount = exp(log_weekly_amount))
+
+# Plot
+ggplot() +
+  geom_line(data = special100_orig, 
+            aes(x = weekly, y = weekl_amount), colour = "black") +
+  geom_line(data = sim_paths, 
+            aes(x = weekly, y = .sim, group = .rep, colour = factor(.rep)),
+            alpha = 0.8, linewidth = 0.8)  +
+  labs(title = "Simulation mögliche Zukunftswerte",
+       y = "Produzierter Betrag", x = "Wochen", colour = "Mögliche Pfade") +
+  theme_classic() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+
+## Ignore from here.
+**Use special100_log to estimate the model using ARIMA**
+```{r}
+special100_log %>%
+  model(arima_season = ARIMA(log_weekly_amount ~ pdq(0,1,1) + PDQ(1,0,1, period = 52)),
+        arima_noseason = ARIMA(log_weekly_amount ~ pdq(0,1,1))
+        ) -> arimas
+arimas
+```
+
+```{r}
+glance(arimas) %>%
+  arrange(AICc) %>%
+  select(.model:BIC)
+```
+
+```{r}
+arimas %>%
+  select(arima_season) %>%
+  gg_tsresiduals()
+```
+
+```{r}
+augment(arimas) %>% 
+  dplyr::filter(.model == "arima_season") %>%
+  features(.innov, ljung_box, lag = 15, dof = 1)
+```
+
+
+```{r}
+fct <- arimas %>% 
+  forecast(h = "12 months") %>%
+  dplyr::filter(.model == "arima_season") %>%
+  mutate(.expmean = exp(.mean))
+
+fct
+
+special100_log <- special100_log %>% mutate(log_week_amount = exp(log_weekly_amount))
+special100_log
+
+ggplot() +
+  geom_line(data = special100_log, aes(x = weekly, y = log_week_amount), color = "black") +
+  geom_line(data = fct, aes(x = weekly, y = .expmean), color = "blue") +
+  #geom_ribbon(data = fct, aes(x = weekly, ymin = .lower, ymax = .upper), alpha = 0.2, fill = "blue") +
+    labs(title = "Original Series + Back-transformed Forecast",
+       y = "Amount", x = "Time") +
+  theme_classic()
+```
 
 ----Die Analyse ist noch nicht abgeschlossen----
 

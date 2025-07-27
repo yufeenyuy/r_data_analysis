@@ -24,3 +24,21 @@ Die Analyse efolgt mit der programmiersprache R.
 - Für lag = 0 ist der Korrelation Koeffizient (ACF) gleich eins. D.h Die Zeitrheihe ist noch nicht verschoben. Somit ist die Korrelation am Stärksten.
 - Die ACFs sind durchaus positive und sinken mit steigenden lags. Diese zeigt das existierenden Trend in der Zeitrheihe.
 - Mehr als 5% den Werten liegen außerhalb dem Signifikant Bereich. D.h es liegen Korrelationen in der Zeitrheie und somit ist die Zeitrheihe kein *White Noise* Prozess. Dies ist ein weitere Hinweis, dass die Zeitrheihe *nicht Stationär* ist.
+
+
+**Die Transformation mit Box-Cox**
+![Box-Cox Transformation](./img/log_transformiert.png)
+
+
+**Beobachtungen aus der log transformierte Zeitrheihe**
+
++ Nach der Log Transformation ist die Varianz der Zeitrheihe über die Zeit Konstant.
++ Es besteht immernoch einen Trend
+
+
+**Forecast mit ARIMA**
+![Forecast mit ARIMA(0,1,1)](./img/log_transformiert_forecast.png)
+
+
+**Forecast mit Benchmark Modellen**
+![Forecast mit Benchmark Modellen](./img/log_transformiert_forecast.png)
