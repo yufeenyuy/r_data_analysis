@@ -2,9 +2,12 @@
 
 **ACHTUNG!**: Ausführliche Erklärungen zum Vorgehen oder Methode der Analyse sind in *time_series_analysis.pdf* erfasst.
 
-In diesem Komponent meines Systems werden statistische Methode eingesetzt, um Forecasting für das Produkt, dass am Meisten produziert wurde.
-Die Analyse efolgt mit der programmiersprache R.
+In diesem Komponent meines Systems werden statistische Methode eingesetzt, um Forecasting für das Produkt, dass am Meisten produziert wurde.Das Ergebnis des Forecasts soll den Geschäftführer der paderborner fiktiven Bäkerei dienen, eine datenbasierte Entscheidung zu treffen, ob er seine Bäkerei wieder öffnen soll oder nicht.Laut der Geschäftsführer soll die Analyse an Hand des produzierten Beträge erfolgen, weil Die Analyse efolgt mit der programmiersprache R.
 
+**Produkte mit produzierte Beträge in GE**
+![Produkte](./img/produkte.png)
+
+**Die Drei meist produzierte Produkte**
 ![Die Zeitrheihen der drei meist Produzierte Produkte](./img/zeitrheihen_special100.png)
 
 **Betrachte man die Graphik für das meist produzierte Produkt sprich special100_amt, dann kann man folgendes beobachten**
