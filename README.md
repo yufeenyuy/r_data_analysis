@@ -36,10 +36,11 @@ Die Analyse efolgt mit der programmiersprache R.
 + Es besteht immernoch einen Trend. Der Trend kann durch *Differenzierung erster Ordnung* stabilisiert werden.Differenzierung ist allerdings nicht wichtig, weil der Forecast mit ARIMA durchgeführt wird. 
 
 
-**Forecast mit ARIMA(0,1,1). ARIMA **
+**Forecast mit ARIMA(0,1,1)**
+
 ![Forecast mit ARIMA(0,1,1)](./img/log_transformiert_forecast.png)
 
-**Interpretation des Forecastsbereichs**
+*Interpretation des Forecastsbereichs*
 + Die blaue Linie steht für den Mittelwert Forecasts (Point Forecasts) und zeigt die durchschnittliche Erwartungswerte in der Zukunft.
 + Die Dünne blaue Linie zeigt wie der Mittelwert sich im Laufe der Zeit entwickelt wird.
 + 80% Confident Interval: Mit 80% Wahrscheinlichkeit wird einen Wert in dem Bereich vorhergesagt.
@@ -47,8 +48,8 @@ Die Analyse efolgt mit der programmiersprache R.
 
 
 **Simulation für ARIMA(0,1,1)**
-Hier sind 5 mögliche Pfade, die durch die Prognose entstehen könnte. 
-![Forecast mit ARIMA(0,1,1)](./img/arima_simulation.png)
+Hier sind 5 mögliche Pfade, die durch die Prognose entstehen könnten. 
+![Forecast mit ARIMA(0,1,1)](./img/arima_simulation.PNG)
 
 
 **Forecast mit Benchmark Modellen**
