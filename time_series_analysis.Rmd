@@ -272,7 +272,7 @@ local_bakery_production_ts
 local_bakery_production_ts %>%
   ggplot(aes(x = weekly)) +
   geom_line(aes(y = weekly_amount, color = products)) +
-  labs(title = "Zeitrheihen für die meist produzierte Produkte") +
+  labs(x = "Wochen",y = "Produzierter Betrag (GE)", title = "Zeitrheihen für die meist produzierte Produkte") +
   theme_classic() + 
   theme(
     plot.title = element_text(hjust = 0.5),
@@ -327,7 +327,7 @@ special100 %>%
 ```{r}
 special100 %>%
   gg_season(weekly_amount, labels = "both") +
-  labs(y = "Produzierter Betrag", title = "Zeitrheihe auf Saisonalität graphisch prüfen") +
+  labs(y = "Produzierter Betrag", x = "Monate", title = "Zeitrheihe auf Saisonalität graphisch prüfen") +
   theme_classic()
 ```
 
@@ -373,14 +373,12 @@ special100_log
 ```
 
 
-
-
 ```{r}
 special100_log %>%
   ggplot(aes(x = weekly)) +
   geom_line(aes(y = log_weekly_amount), color = "blue") +
   geom_point(aes(y = log_weekly_amount), color = "black") +
-  labs(y = "log(produzierter Betrag) in GE", x = "Woche", 
+  labs(y = "log(produzierter Betrag) (GE)", x = "Wochen", 
        title = "Stabilisierung der Varianz durch Box-Cox Log Transformation") +
   theme_classic() + 
   theme(
@@ -423,7 +421,7 @@ special100_log_diff %>%
   ggplot(aes(x = weekly)) +
   geom_line(aes(y = log_diff_weekly_amount), color = "blue") +
   geom_point(aes(y = log_diff_weekly_amount), color = "black") +
-  labs(y = "log(produzierter Betrag) in GE" ,title = "Stabilisierte Varianz und Mittelwert") +
+  labs(y = "log(produzierter Betrag) in GE",x = "Wochen", title = "Stabilisierte Varianz und Mittelwert") +
   theme_classic() + 
   theme(
     plot.title = element_text(hjust = 0.5),
@@ -483,6 +481,7 @@ special100_log_diff %>%
 arima_models
 ```
 
+
 ```{r}
 glance(arima_models) %>%
   arrange(AICc) %>%
@@ -490,14 +489,11 @@ glance(arima_models) %>%
 ```
 
 
-
 ```{r}
 arima_models %>%
   select(arima_search) %>%
   gg_tsresiduals()
 ```
-
-
 
 
 ```{r}
@@ -510,9 +506,9 @@ augment(arima_models) %>%
 arima_models %>% 
   forecast(h = "12 months") %>%
   dplyr::filter(.model == "arima_search") %>%
-  autoplot(special100_log_diff)
+  autoplot(special100_log_diff) +
+  labs(x = "wochen")
 ```
-
 
 
 **Use special100_log to estimate the model using ARIMA**
@@ -550,7 +546,7 @@ arima_model %>%
   forecast(h = "12 months") %>%
   dplyr::filter(.model == "arima_search") %>%
   autoplot(special100_log) +
-  labs(y = "Log transformierte Beträge (GE)", x = "Woche", title = "Log transformierte Werte + forecast") +
+  labs(y = "Log transformierte Beträge (GE)", x = "Wochen", title = "Log transformierte Werte + Forecast") +
   theme_classic() +
   theme(
     plot.title = element_text(hjust = 0.5),
@@ -577,7 +573,7 @@ special100_fc <- special100_fit %>%
   forecast(h = "52 weeks")  
 special100_fc %>% autoplot(special100_log, level = NULL) +
   labs(y = "Log transformierte Beträge (GE)", x = "Wochen", title = "Log transformierte Werte + Forecast der Benchmark Modellen") +
-  guides(color = guide_legend(title = "vorhersagen")) +
+  guides(color = guide_legend(title = "Benchmark Modellen")) +
   theme_classic() +
   theme(
     plot.title = element_text(hjust = 0.5),
@@ -600,7 +596,7 @@ ggplot() +
   geom_line(data = special100_log, aes(x = weekly, y = log_week_amount), color = "black") +
   geom_line(data = fct, aes(x = weekly, y = .expmean), color = "blue") +
     labs(title = "Originale Zeitrheihe zusammen mit der Mittelwert Forecast",
-       y = "Produzierter Betrag", x = "Woche") +
+       y = "Produzierter Betrag", x = "Wochen") +
   theme_classic()
 ```
 
@@ -678,12 +674,11 @@ special100_log
 ggplot() +
   geom_line(data = special100_log, aes(x = weekly, y = log_week_amount), color = "black") +
   geom_line(data = fct, aes(x = weekly, y = .expmean), color = "blue") +
-  #geom_ribbon(data = fct, aes(x = weekly, ymin = .lower, ymax = .upper), alpha = 0.2, fill = "blue") +
     labs(title = "Original Series + Back-transformed Forecast",
        y = "Amount", x = "Time") +
   theme_classic()
 ```
 
-----Die Analyse ist noch nicht abgeschlossen----
+
 
 

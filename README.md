@@ -1,4 +1,4 @@
-# Zeitrheihen Forecasting
+# Zeitrheihen Forecasting mit Autoregressive Integrated Moving Average (ARIMA)
 
 **ACHTUNG!**: Ausführliche Erklärungen zum Vorgehen oder Methode der Analyse sind in *time_series_analysis.pdf* erfasst.
 
@@ -33,11 +33,22 @@ Die Analyse efolgt mit der programmiersprache R.
 **Beobachtungen aus der log transformierte Zeitrheihe**
 
 + Nach der Log Transformation ist die Varianz der Zeitrheihe über die Zeit Konstant.
-+ Es besteht immernoch einen Trend
++ Es besteht immernoch einen Trend. Der Trend kann durch *Differenzierung erster Ordnung* stabilisiert werden.Differenzierung ist allerdings nicht wichtig, weil der Forecast mit ARIMA durchgeführt wird. 
 
 
-**Forecast mit ARIMA**
+**Forecast mit ARIMA(0,1,1). ARIMA **
 ![Forecast mit ARIMA(0,1,1)](./img/log_transformiert_forecast.png)
+
+**Interpretation des Forecastsbereichs**
++ Die blaue Linie steht für den Mittelwert Forecasts (Point Forecasts) und zeigt die durchschnittliche Erwartungswerte in der Zukunft.
++ Die Dünne blaue Linie zeigt wie der Mittelwert sich im Laufe der Zeit entwickelt wird.
++ 80% Confident Interval: Mit 80% Wahrscheinlichkeit wird einen Wert in dem Bereich vorhergesagt.
++ 95% Confident Interval: Mit 95% Wahrscheinlichkeit wird einen Wert in dem Bereich vorhergesagt.
+
+
+**Simulation für ARIMA(0,1,1)**
+Hier sind 5 mögliche Pfade, die durch die Prognose entstehen könnte. 
+![Forecast mit ARIMA(0,1,1)](./img/arima_simulation.png)
 
 
 **Forecast mit Benchmark Modellen**
