@@ -48,6 +48,7 @@ Die Analyse efolgt mit der programmiersprache R.
 
 
 **Simulation für ARIMA(0,1,1)**
+
 Hier sind 5 mögliche Pfade, die durch die Prognose entstehen könnten. 
 ![Forecast mit ARIMA(0,1,1)](./img/arima_simulation.PNG)
 
