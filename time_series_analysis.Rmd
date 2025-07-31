@@ -124,7 +124,8 @@ gplot_2 <- product_ts_long %>%
   summarise(total_amount = sum(weekly_amount)) %>%
   ggplot(aes(x = produkte, y = total_amount)) + 
   geom_col(fill = "orange") +
-  ylab("Betrag") + 
+  ylab("Produzierter Betrag") +
+  xlab("Produkte") +
   ggtitle("Gesamt produzierter Betrag der Produkte") +
   theme_linedraw() +
   theme(
